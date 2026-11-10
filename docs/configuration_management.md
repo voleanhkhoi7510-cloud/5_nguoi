@@ -52,11 +52,11 @@ chore: update local docker-compose for ollama memory limit
 | **Backend Framework** | Java Spring Boot 3.x | Xây dựng RESTful API xử lý nghiệp vụ lõi |
 | **Relational Database** | PostgreSQL 16 | Lưu trữ dữ liệu cấu trúc thành viên & quan hệ |
 | **Vector Storage (RAG)** | PostgreSQL with pgvector extension | Lưu trữ vector embeddings phả ký gia tộc |
-| **Local AI Engine** | Ollama (Llama 3 / Mistral 7B) | Mô hình ngôn ngữ lớn chạy cục bộ trên Localhost |
+| **Local AI Engine** | LMstudio ( Qwen2.5-7B-Instruct ) | Mô hình ngôn ngữ lớn chạy cục bộ trên Localhost |
 | **Container & Runtime** | Docker Desktop, Docker Compose | Đóng gói và chạy toàn bộ giải pháp tại Local |
 | **IDEs / Code Editors** | Visual Studio Code, IntelliJ IDEA Ultimate | Môi trường lập trình chính của các thành viên |
 | **Diagramming Tools** | Flowchart Maker, Database Diagram Tool, Figma | Thiết kế luồng, ERD, Class/Sequence Diagrams |
 | **Documentation Tools** | Google Docs, Google Sheets, MS Office | Soạn thảo báo cáo, biểu mẫu và kế hoạch |
 | **Version Control** | Git, GitHub | Quản lý mã nguồn, Pull Request và sao lưu tài liệu |
 | **Project Management** | GitHub Projects (Kanban Board) | Quản lý task, phân công WBS và theo dõi tiến độ |
-| **API Testing Tools** | Postman, Newman, Swagger / OpenAPI | Kiểm thử endpoint và xuất tài liệu đặc tả API |
+| **API Testing Tools** | Swagger / OpenAPI | Kiểm thử endpoint và xuất tài liệu đặc tả API |
