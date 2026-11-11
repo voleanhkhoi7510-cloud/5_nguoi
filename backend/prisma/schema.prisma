@@ -1,0 +1,238 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  user_id       BigInt   @id @default(autoincrement())
+  email         String   @unique @db.VarChar(255)
+  password_hash String   @db.VarChar(255)
+  full_name     String   @db.VarChar(150)
+  role          String   @default("MEMBER") @db.VarChar(30)
+  avatar_url    String?
+  created_at    DateTime @default(now()) @db.Timestamp(6)
+
+  family_members    family_members[]
+  posts             posts[]
+  post_comments     post_comments[]
+  post_reactions    post_reactions[]
+  events            events[]
+  event_rsvps       event_rsvps[]
+  ai_chat_histories ai_chat_histories[]
+  members           members[]
+  audit_logs        audit_logs[]
+}
+
+model families {
+  family_id         BigInt              @id @default(autoincrement())
+  name              String              @db.VarChar(150)
+  description       String?
+  created_at        DateTime?           @default(now()) @db.Timestamp(6)
+  family_branches   family_branches[]
+  family_documents  family_documents[]
+  members           members[]
+  family_members    family_members[]
+  posts             posts[]
+  events            events[]
+  ai_chat_histories ai_chat_histories[]
+}
+
+model family_branches {
+  branch_id   BigInt    @id @default(autoincrement())
+  family_id   BigInt
+  name        String    @db.VarChar(150)
+  description String?
+  families    families  @relation(fields: [family_id], references: [family_id], onDelete: NoAction, onUpdate: NoAction)
+  members     members[]
+}
+
+model members {
+  member_id  BigInt    @id @default(autoincrement())
+  family_id  BigInt
+  branch_id  BigInt?
+  user_id    BigInt?
+  full_name  String    @db.VarChar(150)
+  gender     String?   @db.VarChar(20)
+  generation Int       @default(1)
+  birth_date DateTime? @db.Date
+  death_date DateTime? @db.Date
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+
+  family_documents                                                         family_documents[]
+  marriages_marriages_partner1_idTomembers                                 marriages[]                  @relation("marriages_partner1_idTomembers")
+  marriages_marriages_partner2_idTomembers                                 marriages[]                  @relation("marriages_partner2_idTomembers")
+  member_profiles                                                          member_profiles?
+  family_branches                                                          family_branches?             @relation(fields: [branch_id], references: [branch_id], onDelete: NoAction, onUpdate: NoAction)
+  families                                                                 families                     @relation(fields: [family_id], references: [family_id], onDelete: NoAction, onUpdate: NoAction)
+  users                                                                    users?                       @relation(fields: [user_id], references: [user_id], onDelete: SetNull, onUpdate: NoAction)
+  parent_child_relationships_parent_child_relationships_child_idTomembers  parent_child_relationships[] @relation("parent_child_relationships_child_idTomembers")
+  parent_child_relationships_parent_child_relationships_parent_idTomembers parent_child_relationships[] @relation("parent_child_relationships_parent_idTomembers")
+}
+
+model member_profiles {
+  member_id  BigInt  @id
+  occupation String? @db.VarChar(150)
+  education  String? @db.VarChar(150)
+  biography  String?
+  members    members @relation(fields: [member_id], references: [member_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model marriages {
+  marriage_id BigInt    @id @default(autoincrement())
+  partner1_id BigInt
+  partner2_id BigInt
+  start_date  DateTime? @db.Date
+  end_date    DateTime? @db.Date
+  status      String?   @default("MARRIED") @db.VarChar(30)
+
+  members_marriages_partner1_idTomembers members @relation("marriages_partner1_idTomembers", fields: [partner1_id], references: [member_id], onDelete: Cascade, onUpdate: NoAction)
+  members_marriages_partner2_idTomembers members @relation("marriages_partner2_idTomembers", fields: [partner2_id], references: [member_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model parent_child_relationships {
+  relationship_id   BigInt @id @default(autoincrement())
+  parent_id         BigInt
+  child_id          BigInt
+  relationship_type String @default("father") @db.VarChar(30)
+
+  members_parent_child_relationships_child_idTomembers  members @relation("parent_child_relationships_child_idTomembers", fields: [child_id], references: [member_id], onDelete: Cascade, onUpdate: NoAction)
+  members_parent_child_relationships_parent_idTomembers members @relation("parent_child_relationships_parent_idTomembers", fields: [parent_id], references: [member_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([parent_id, child_id], map: "uq_parent_child")
+}
+
+model family_documents {
+  document_id   BigInt    @id @default(autoincrement())
+  family_id     BigInt
+  member_id     BigInt?
+  title         String    @db.VarChar(200)
+  document_type String?   @db.VarChar(50)
+  file_url      String?
+  description   String?
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  families      families  @relation(fields: [family_id], references: [family_id], onDelete: Cascade, onUpdate: NoAction)
+  members       members?  @relation(fields: [member_id], references: [member_id], onDelete: SetNull, onUpdate: NoAction)
+}
+
+model roles {
+  role_id     BigInt  @id @default(autoincrement())
+  name        String  @unique @db.VarChar(50)
+  description String?
+
+  family_members family_members[]
+}
+
+model family_members {
+  family_member_id BigInt   @id @default(autoincrement())
+  user_id          BigInt
+  family_id        BigInt
+  role_id          BigInt
+  status           String   @default("APPROVED") @db.VarChar(20) // 'PENDING', 'APPROVED', 'REJECTED'
+  joined_at        DateTime @default(now()) @db.Timestamp(6)
+
+  users    users    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  families families @relation(fields: [family_id], references: [family_id], onDelete: NoAction, onUpdate: NoAction)
+  roles    roles    @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([user_id, family_id])
+}
+
+model posts {
+  post_id         BigInt    @id @default(autoincrement())
+  family_id       BigInt
+  author_id       BigInt
+  content         String
+  is_announcement Boolean   @default(false)
+  status          String    @default("ACTIVE") @db.VarChar(20) // 'ACTIVE', 'HIDDEN', 'FLAGGED'
+  media_urls      String[]
+  created_at      DateTime  @default(now()) @db.Timestamp(6)
+
+  families       families         @relation(fields: [family_id], references: [family_id], onDelete: Cascade, onUpdate: NoAction)
+  users          users            @relation(fields: [author_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  post_comments  post_comments[]
+  post_reactions post_reactions[]
+}
+
+model post_comments {
+  comment_id BigInt   @id @default(autoincrement())
+  post_id    BigInt
+  author_id  BigInt
+  content    String
+  created_at DateTime @default(now()) @db.Timestamp(6)
+
+  posts posts @relation(fields: [post_id], references: [post_id], onDelete: Cascade, onUpdate: NoAction)
+  users users @relation(fields: [author_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model post_reactions {
+  reaction_id   BigInt   @id @default(autoincrement())
+  post_id       BigInt
+  user_id       BigInt
+  reaction_type String   @default("LIKE") @db.VarChar(20)
+  created_at    DateTime @default(now()) @db.Timestamp(6)
+
+  posts posts @relation(fields: [post_id], references: [post_id], onDelete: Cascade, onUpdate: NoAction)
+  users users @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([post_id, user_id], map: "uq_post_user_reaction")
+}
+
+model events {
+  event_id    BigInt    @id @default(autoincrement())
+  family_id   BigInt
+  creator_id  BigInt
+  title       String    @db.VarChar(200)
+  description String?
+  event_date  DateTime  @db.Timestamp(6)
+  location    String?   @db.VarChar(255)
+  media_urls  String[]
+  created_at  DateTime  @default(now()) @db.Timestamp(6)
+
+  families    families      @relation(fields: [family_id], references: [family_id], onDelete: Cascade, onUpdate: NoAction)
+  users       users         @relation(fields: [creator_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  event_rsvps event_rsvps[]
+}
+
+model event_rsvps {
+  rsvp_id    BigInt   @id @default(autoincrement())
+  event_id   BigInt
+  user_id    BigInt
+  status     String   @default("GOING") @db.VarChar(20)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+
+  events events @relation(fields: [event_id], references: [event_id], onDelete: Cascade, onUpdate: NoAction)
+  users  users  @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([event_id, user_id], map: "uq_event_user_rsvp")
+}
+
+model ai_chat_histories {
+  chat_id         BigInt   @id @default(autoincrement())
+  user_id         BigInt
+  family_id       BigInt?
+  conversation_id String   @db.VarChar(100)
+  prompt          String
+  response        String
+  created_at      DateTime @default(now()) @db.Timestamp(6)
+
+  users    users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  families families? @relation(fields: [family_id], references: [family_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model audit_logs {
+  log_id      BigInt   @id @default(autoincrement())
+  user_id     BigInt?
+  action      String   @db.VarChar(50)
+  entity_type String   @db.VarChar(50)
+  entity_id   String?  @db.VarChar(50)
+  details     String?
+  ip_address  String?  @db.VarChar(50)
+  created_at  DateTime @default(now()) @db.Timestamp(6)
+
+  users users? @relation(fields: [user_id], references: [user_id], onDelete: SetNull, onUpdate: NoAction)
+}

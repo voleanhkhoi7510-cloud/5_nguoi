@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model families {
+  family_id        BigInt             @id @default(autoincrement())
+  name             String             @db.VarChar(150)
+  description      String?
+  created_at       DateTime?          @default(now()) @db.Timestamp(6)
+  family_branches  family_branches[]
+  family_documents family_documents[]
+  members          members[]
+}
+
+model family_branches {
+  branch_id   BigInt    @id @default(autoincrement())
+  family_id   BigInt
+  name        String    @db.VarChar(150)
+  description String?
+  families    families  @relation(fields: [family_id], references: [family_id], onDelete: NoAction, onUpdate: NoAction)
+  members     members[]
+}
+
+model family_documents {
+  document_id   BigInt    @id @default(autoincrement())
+  family_id     BigInt
+  member_id     BigInt?
+  title         String    @db.VarChar(200)
+  document_type String?   @db.VarChar(50)
+  file_url      String?
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  families      families  @relation(fields: [family_id], references: [family_id], onDelete: NoAction, onUpdate: NoAction)
+  members       members?  @relation(fields: [member_id], references: [member_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model marriages {
+  marriage_id                            BigInt    @id @default(autoincrement())
+  partner1_id                            BigInt
+  partner2_id                            BigInt
+  start_date                             DateTime? @db.Date
+  end_date                               DateTime? @db.Date
+  status                                 String?   @db.VarChar(30)
+  members_marriages_partner1_idTomembers members   @relation("marriages_partner1_idTomembers", fields: [partner1_id], references: [member_id], onDelete: NoAction, onUpdate: NoAction)
+  members_marriages_partner2_idTomembers members   @relation("marriages_partner2_idTomembers", fields: [partner2_id], references: [member_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model member_profiles {
+  member_id  BigInt  @id
+  occupation String? @db.VarChar(150)
+  education  String? @db.VarChar(150)
+  biography  String?
+  members    members @relation(fields: [member_id], references: [member_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model members {
+  member_id                                                                BigInt                       @id @default(autoincrement())
+  family_id                                                                BigInt
+  branch_id                                                                BigInt?
+  full_name                                                                String                       @db.VarChar(150)
+  gender                                                                   String?                      @db.VarChar(20)
+  birth_date                                                               DateTime?                    @db.Date
+  death_date                                                               DateTime?                    @db.Date
+  created_at                                                               DateTime?                    @default(now()) @db.Timestamp(6)
+  family_documents                                                         family_documents[]
+  marriages_marriages_partner1_idTomembers                                 marriages[]                  @relation("marriages_partner1_idTomembers")
+  marriages_marriages_partner2_idTomembers                                 marriages[]                  @relation("marriages_partner2_idTomembers")
+  member_profiles                                                          member_profiles?
+  family_branches                                                          family_branches?             @relation(fields: [branch_id], references: [branch_id], onDelete: NoAction, onUpdate: NoAction)
+  families                                                                 families                     @relation(fields: [family_id], references: [family_id], onDelete: NoAction, onUpdate: NoAction)
+  parent_child_relationships_parent_child_relationships_child_idTomembers  parent_child_relationships[] @relation("parent_child_relationships_child_idTomembers")
+  parent_child_relationships_parent_child_relationships_parent_idTomembers parent_child_relationships[] @relation("parent_child_relationships_parent_idTomembers")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model parent_child_relationships {
+  relationship_id                                       BigInt  @id @default(autoincrement())
+  parent_id                                             BigInt
+  child_id                                              BigInt
+  relationship_type                                     String  @db.VarChar(30)
+  members_parent_child_relationships_child_idTomembers  members @relation("parent_child_relationships_child_idTomembers", fields: [child_id], references: [member_id], onDelete: NoAction, onUpdate: NoAction)
+  members_parent_child_relationships_parent_idTomembers members @relation("parent_child_relationships_parent_idTomembers", fields: [parent_id], references: [member_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([parent_id, child_id], map: "uq_parent_child")
+}
