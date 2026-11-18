@@ -1,62 +1,69 @@
-# 6. Configuration Management
+# 6. Configuration Management (Quản Lý Cấu Hình & Môi Trường)
 
-### a. Document Management
-Thay vì lưu trữ các tệp văn bản Word rời rạc dễ gây xung đột phiên bản, dự án áp dụng phương pháp **Docs-as-Code** kết hợp không gian làm việc số:
+### a. Quản lý Tài liệu kỹ thuật (Document Management)
+Thay vì lưu trữ các tệp văn bản rời rạc dễ gây xung đột phiên bản, dự án áp dụng phương pháp **Docs-as-Code**:
 
 - **Tài liệu kỹ thuật nội bộ (Internal Technical Docs):**
-  - Các tài liệu đặc tả API (Swagger/OpenAPI), tài liệu kiến trúc, lược đồ CSDL và hướng dẫn chạy cục bộ được viết bằng định dạng **Markdown** và lưu trực tiếp trong thư mục `/docs` của mã nguồn.
+  - Các tài liệu đặc tả API (OpenAPI spec `backend/src/OpenAPI.yml`), tài liệu kiến trúc, lược đồ CSDL và hướng dẫn chạy cục bộ được viết bằng định dạng **Markdown** và lưu trực tiếp trong thư mục `/docs` của mã nguồn.
   - Mọi thay đổi trong tài liệu được kiểm soát phiên bản qua Git commit tương tự như mã nguồn.
-
-- **Tài liệu bàn giao học thuật (Formal Academic Deliverables):**
-  - Các báo cáo chính thức gửi Hội đồng (PMP, SRS, SDD, Final Report) được soạn thảo trên nền tảng **Google Docs** và chia sẻ nội bộ.
-  - **Cơ chế gắn tag phiên bản (Semantic Document Tagging):** Áp dụng quy tắc `MAJOR.MINOR.PATCH`:
-    - `v0.x.x`: Các bản thảo trong quá trình phân tích Sprint 1–2.
-    - `v1.0.0`: Bản chốt nộp cuối tuần 3 (SRS & Architecture Baseline).
-    - `v2.0.0`: Báo cáo nghiệm thu hoàn chỉnh tại tuần 6.
+  - Thư mục tài liệu bao gồm:
+    - `/docs/00_cover_and_introduction.md`: Bìa báo cáo và giới thiệu dự án.
+    - `/docs/product_overview.md`: Tổng quan sản phẩm và hạ tầng công nghệ.
+    - `/docs/system_actors.md`: Danh mục tác nhân và ma trận quyền hạn.
+    - `/docs/common_requirements.md`: Các yêu cầu kỹ thuật và phi chức năng chung.
+    - `/docs/configuration_management.md`: Quy trình quản lý cấu hình và công cụ.
+    - `/docs/requirement/`: Quy tắc nghiệp vụ (50 BRs), Use Cases (45 UCs), WBS & Dự toán nỗ lực, Bàn giao dự án.
+    - `/docs/design/architecture/`: Kiến trúc hệ thống phân tầng và luồng màn hình chi tiết.
+    - `/docs/design/database/`: Thiết kế CSDL quan hệ 17 bảng và từ điển dữ liệu.
+    - `/docs/testing/`: Kế hoạch kiểm thử, kết quả 73 ca kiểm thử tự động đạt 100% PASS.
 
 ---
 
-### b. Source Code Management
+### b. Quản lý Mã nguồn (Source Code Management)
 
 ```text
-[main]   ──────────────────────────────────────────●
+[main]   ──────────────────────────────────────────● (Release v1.0.0)
             \                                    /
-[feat/*]     ●──────────────● (Pull Request + Peer Review)
+[feat/*]     ●──────────────●───────────────────● (Pull Request + Peer Review)
 ```
 
 #### 1. Phân cấp nhánh (Branch Structure):
-- `main` **(Protected Branch):** Nhánh chứa mã nguồn ổn định nhất, luôn ở trạng thái sẵn sàng khởi chạy thành công trên máy tính bằng Docker. Nhánh này được khóa (Branch Protection Rule), nghiêm cấm commit trực tiếp và chỉ nhận code thông qua Pull Request.
-- `feat/<tên-tính-năng>`: Nhánh làm việc ngắn ngày của từng lập trình viên (thời gian sống $\le 3$ ngày), ví dụ: `feat/family-tree-d3`, `feat/auth-jwt-local`, `feat/kinship-reasoning`.
-- `fix/<mã-lỗi>`: Nhánh xử lý nhanh các bug phát hiện trong các buổi demo nội bộ (ví dụ: `fix/tree-cycle-validation`).
+- `main` **(Protected Branch):** Nhánh chứa mã nguồn ổn định nhất, luôn ở trạng thái sẵn sàng khởi chạy thành công trên máy tính bằng `chay-tat-ca.bat` hoặc Docker Compose. Nhánh này được khóa (Branch Protection Rule), nghiêm cấm commit trực tiếp và chỉ nhận code thông qua Pull Request.
+- `feat/<tên-tính-năng>`: Nhánh làm việc ngắn hạn của từng lập trình viên, ví dụ: `feat/genealogy-tree-reactflow`, `feat/auth-jwt-rbac`, `feat/ai-kinship-lca`, `feat/community-newsfeed`.
+- `fix/<mã-lỗi>`: Nhánh xử lý nhanh các lỗi phát hiện trong quá trình kiểm thử (ví dụ: `fix/tree-cycle-validation`, `fix/cors-preflight`).
 
 #### 2. Quy chuẩn thông điệp Commit (Conventional Commits 1.0):
 ```text
-feat: add ancestor search endpoint
-fix: prevent duplicate spouse relation in tree builder
-perf: optimize pgvector similarity query threshold
-chore: update local docker-compose for ollama memory limit
+feat(genealogy): implement BFS shortest path and LCA algorithm
+feat(rbac): add permission middleware for clan leader approval
+fix(tree): prevent duplicate marriages between same member nodes
+perf(db): optimize prisma queries with select projection
+test(ai): add comprehensive test suite for vietnamese relationship calculation
+chore(config): update environment configuration and startup scripts
 ```
 
 #### 3. Quy tắc kiểm duyệt mã nguồn (Peer Review Gate):
 - Mỗi Pull Request (PR) phải đi kèm mô tả ngắn về thay đổi và ảnh chụp màn hình kiểm thử tại máy local.
 - Yêu cầu tối thiểu **01 Approved Review** từ thành viên phụ trách mảng tương ứng trước khi thực hiện hành động *Squash and Merge*.
+- Bộ kiểm thử tự động (`npm test`) bắt buộc phải vượt qua 100% trước khi merge vào nhánh chính.
 
 ---
 
 ### c. Bảng công cụ & Cơ sở hạ tầng (Tools & Infrastructures)
 
-| Category | Tools / Infrastructure | Notes |
+| Phân loại (Category) | Công cụ / Hạ tầng (Tools / Infrastructure) | Ghi chú & Mục đích sử dụng |
 | :--- | :--- | :--- |
-| **Frontend Web Portal** | Next.js 14/15, Tailwind CSS | Xây dựng giao diện web quản trị |
-| **Tree Graph Visualization** | D3.js / SVG Hierarchy Canvas | Dựng sơ đồ phả hệ tương tác trực quan |
-| **Backend Framework** | Java Spring Boot 3.x | Xây dựng RESTful API xử lý nghiệp vụ lõi |
-| **Relational Database** | PostgreSQL 16 | Lưu trữ dữ liệu cấu trúc thành viên & quan hệ |
-| **Vector Storage (RAG)** | PostgreSQL with pgvector extension | Lưu trữ vector embeddings phả ký gia tộc |
-| **Local AI Engine** | LMstudio ( Qwen2.5-7B-Instruct ) | Mô hình ngôn ngữ lớn chạy cục bộ trên Localhost |
-| **Container & Runtime** | Docker Desktop, Docker Compose | Đóng gói và chạy toàn bộ giải pháp tại Local |
-| **IDEs / Code Editors** | Visual Studio Code, IntelliJ IDEA Ultimate | Môi trường lập trình chính của các thành viên |
-| **Diagramming Tools** | Flowchart Maker, Database Diagram Tool, Figma | Thiết kế luồng, ERD, Class/Sequence Diagrams |
-| **Documentation Tools** | Google Docs, Google Sheets, MS Office | Soạn thảo báo cáo, biểu mẫu và kế hoạch |
-| **Version Control** | Git, GitHub | Quản lý mã nguồn, Pull Request và sao lưu tài liệu |
-| **Project Management** | GitHub Projects (Kanban Board) | Quản lý task, phân công WBS và theo dõi tiến độ |
-| **API Testing Tools** | Swagger / OpenAPI | Kiểm thử endpoint và xuất tài liệu đặc tả API |
+| **Frontend Web Portal** | React 19, Vite, TypeScript, Tailwind CSS | Giao diện Single Page Application hiện đại, tốc độ phản hồi cực nhanh |
+| **Tree Visualization** | React Flow (`reactflow ^11.11.4`) | Dựng sơ đồ phả hệ tương tác trực quan kéo thả, zoom pan, phân màu thế hệ |
+| **Routing & Navigation** | React Router DOM v7 | Điều hướng trang mượt mà không reload trang |
+| **Icons Library** | Lucide React (`lucide-react`) | Bộ biểu tượng đồ họa hiện đại chuẩn giao diện gia đình số |
+| **Backend Framework** | Node.js (ES Modules), Express 5, TypeScript | Xây dựng RESTful API xử lý nghiệp vụ lõi, bảo mật phân quyền RBAC |
+| **ORM & Database Client** | Prisma ORM 6 (`@prisma/client`, `prisma`) | Ánh xạ CSDL kiểu dữ liệu an toàn, quản lý migrations tự động |
+| **Relational Database** | PostgreSQL 16 | Lưu trữ dữ liệu cấu trúc 17 bảng (thành viên, quan hệ, bài viết, sự kiện) |
+| **Local AI Engine** | Module `AI/` (TypeScript), BFS/LCA/RAG | Khung AI độc lập: giải thuật đồ thị, suy luận xưng hô thuần Việt, RAG |
+| **Authentication & Crypto** | JSON Web Token (`jsonwebtoken`), `bcrypt` | Cấp phiên làm việc Bearer Token và băm mật khẩu chuẩn công nghiệp |
+| **Testing Framework** | `tsx` runner, Custom Assertions Test Suite | Bộ kiểm thử tự động 73 ca test (RBAC, AI, Modules) không cần external server |
+| **Automation Startup** | Batch Script (`chay-tat-ca.bat`) | Kịch bản 1-chạm tự động khởi chạy song song Backend (Port 3000) và Frontend (Port 5173) |
+| **IDEs / Code Editors** | Visual Studio Code, Cursor | Môi trường lập trình chính của các thành viên |
+| **Version Control** | Git, GitHub | Quản lý mã nguồn, Pull Request và theo dõi lịch sử commit |
+| **API Specification** | OpenAPI 3.0 (`backend/src/OpenAPI.yml`) | Đặc tả chi tiết toàn bộ endpoint và định dạng dữ liệu API |

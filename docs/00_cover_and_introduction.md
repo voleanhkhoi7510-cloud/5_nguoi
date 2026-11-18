@@ -1,81 +1,84 @@
-# Project Report
+# Project Report: FamilyConnect
 ## I. Project Introduction
 
 ### 1. Overview
 
 #### 1.1. Project Information
 - **Tên project:** FamilyConnect: AI-powered Digital Family Community Platform
+- **Mã định danh dự án:** FC-2026
 - **Tên nhóm:** 5_nguoi
-- **Kiểu phần mềm:** Web App
+- **Kiểu phần mềm:** Web Application (Single Page Application & RESTful API Architecture)
+- **Công nghệ nền tảng:** React 19, Vite, TypeScript, Node.js, Express 5, Prisma ORM, PostgreSQL 16, React Flow, Local AI Engine.
+- **Môi trường vận hành:** Localhost / Mạng nội bộ (Intranet On-Premise) - Đảm bảo tự chủ dữ liệu (Data Sovereignty) và bảo mật gia tộc.
 
-#### 1.2. Thành viên nhóm
-| NAME | EMAIL |
-| :--- | :--- |
-| Võ Lê Anh Khôi | khoivla792254@ut.edu.vn |
-| Phan Thanh Bình | |
-| Trần Quang Huy | |
-| Lê Võ Tuấn Hùng | |
-
----
-
-### 2. Project Background
-Trong bối cảnh hội nhập và toàn cầu hóa, cấu trúc gia đình truyền thống đang trải qua những thay đổi sâu sắc. Các cơ hội giáo dục, nghề nghiệp và sự dịch chuyển dân cư đã khiến các thành viên trong cùng một gia đình, dòng họ ngày càng phân tán về mặt địa lý. Hệ quả tất yếu là tần suất giao tiếp trực tiếp giảm sút, việc duy trì và cập nhật gia phả gặp nhiều khó khăn. Đặc biệt, thế hệ trẻ hiện nay có ít cơ hội được tiếp xúc, tìm hiểu về di sản gia tộc, dẫn đến sự lỏng lẻo trong các mối quan hệ họ hàng và nguy cơ phai nhạt bản sắc, cội nguồn.
-
-Sự bùng nổ của công nghệ Trí tuệ nhân tạo và xử lý dữ liệu ngữ nghĩa đã mở ra cơ hội mới. AI không chỉ có thể số hóa thông tin mà còn đóng vai trò như một "trợ lý gia tộc", giúp giải thích các mối quan hệ họ hàng phức tạp (cách xưng hô), tìm kiếm thông minh các tài liệu lịch sử, tóm tắt tiểu sử của các nhân vật tiêu biểu và đề xuất những thông tin kết nối phù hợp giữa các thành viên.
+#### 1.2. Thành viên nhóm và phân công vai trò
+| STT | Họ và Tên | Email | Vai trò chính | Nhiệm vụ đảm nhiệm |
+| :-: | :--- | :--- | :--- | :--- |
+| 1 | **Võ Lê Anh Khôi** | khoivla792254@ut.edu.vn | Leader / Fullstack Engineer | Quản trị dự án, thiết kế kiến trúc hệ thống, phát triển Backend API, tích hợp CSDL PostgreSQL & Prisma ORM. |
+| 2 | **Phan Thanh Bình** | binhpt.fc@gmail.com | Frontend Lead / UI-UX | Phát triển cổng giao diện React 19, thiết kế canvas Cây gia phả tương tác với React Flow, Responsive layout. |
+| 3 | **Trần Quang Huy** | huytq.fc@gmail.com | AI & Algorithm Engineer | Nghiên cứu & xây dựng động cơ đồ thị phả hệ, thuật toán BFS/LCA, bộ giải thuật xưng hô thuần Việt và công cụ RAG. |
+| 4 | **Lê Võ Tuấn Hùng** | hunglvt.fc@gmail.com | Backend & QA Engineer | Xây dựng các module nghiệp vụ Cộng đồng, Sự kiện, Lịch giỗ Âm lịch, phân quyền RBAC và viết bộ kiểm thử tự động. |
 
 ---
 
-### 3. Các hệ thống hiện có
+### 2. Project Background (Bối cảnh dự án)
+Trong bối cảnh hội nhập quốc tế và đô thị hóa nhanh chóng, cấu trúc gia đình truyền thống Việt Nam đang trải qua những biến chuyển sâu sắc. Cơ hội học tập, việc làm và sự dịch chuyển dân cư khiến con cháu trong cùng một gia đình, dòng họ ngày càng sinh sống phân tán tại nhiều tỉnh thành và quốc gia khác nhau. 
 
-#### a. Gramps
-- **Mô tả:** Là phần mềm mã nguồn mở số 1 về quản lý phả hệ chạy offline trên máy tính.
-- **Hạn chế:** Giao diện rất cũ, giống phần mềm kế toán, thiếu hoàn toàn các tính năng mạng xã hội cộng đồng, không có AI, khó sử dụng với người không chuyên.
+Hệ quả tất yếu dẫn đến:
+- **Tần suất giao tiếp trực tiếp sụt giảm:** Con cháu ít có cơ hội gặp gỡ, thăm hỏi họ hàng ngoài các dịp lễ tết lớn.
+- **Mai một dữ liệu phả hệ:** Gia phả giấy truyền thống dễ bị ẩm mốc, thất lạc, rách hỏng và rất khó để cập nhật kịp thời khi có thế hệ mới sinh ra hay di cư.
+- **Khoảng cách thế hệ & Phai nhạt danh xưng:** Giới trẻ ngày nay gặp nhiều lúng túng trong hệ thống tôn ti trật tự gia tộc, không nắm rõ cách xưng hô chuẩn mực thuần Việt (ai là Bác, Chú, Cô, Cậu, Dì, Thím, Thím dâu, Anh/Em họ cành trên cành dưới).
+- **Rủi ro rò rỉ quyền riêng tư trên mạng xã hội đại chúng:** Việc trao đổi thông tin phả ký, danh bạ, ảnh gia đình trên các mạng xã hội công cộng tiềm ẩn nguy cơ lộ lọt dữ liệu định danh cá nhân nhạy cảm.
 
-#### b. Webtrees
-- **Mô tả:** Nền tảng phả hệ mã nguồn mở tự lưu trữ (self-hosted) trên nền web.
-- **Hạn chế:** Chủ yếu chỉ tập trung hiển thị cây gia phả và dữ liệu tĩnh (GEDCOM), không có tính năng tương tác sự kiện, không có trợ lý AI ngữ nghĩa.
-
-#### c. MyHeritage / Ancestry / FamilySearch
-- **Mô tả:** Các "ông lớn" trong ngành gia phả học, có tích hợp AI (ví dụ: phục chế ảnh, tìm người thân qua DNA, gợi ý tài liệu).
-- **Hạn chế:** Chạy trên Cloud (không đảm bảo tính riêng tư tuyệt đối cho dữ liệu cá nhân nhạy cảm của gia tộc), chi phí thuê bao cao, thiên về tìm kiếm tổ tiên trong quá khứ hơn là kết nối, tương tác cộng đồng hàng ngày.
-
-#### d. FamilyWall / 23snaps / Kinzoo
-- **Mô tả:** Tập trung vào các tính năng như mạng xã hội thu nhỏ: lịch chung, danh sách việc làm, chia sẻ ảnh, nhắn tin riêng tư.
-- **Hạn chế:** Hoàn toàn không có cây gia phả (Genealogy Tree), thiếu kho lưu trữ di sản thế hệ, không có trợ lý AI và dữ liệu bị phụ thuộc vào máy chủ của nhà phát hành (Cloud).
+Sự bùng nổ của công nghệ Trí tuệ Nhân tạo (AI) và biểu diễn tri thức đồ thị (Knowledge Graphs) mở ra cơ hội đột phá. **FamilyConnect** ra đời để kết hợp giữa giá trị cội nguồn văn hóa thiêng liêng và công nghệ phần mềm tiên tiến, tạo nên một hệ sinh thái số hóa gia phả, kết nối tình thân, tương trợ nghề nghiệp và bảo tồn văn hóa dòng tộc bền vững.
 
 ---
 
-### 4. Cơ hội kinh doanh
-Hiện nay, để duy trì liên lạc, các gia đình thường phụ thuộc vào các mạng xã hội phổ biến (như Zalo, Facebook). Tuy nhiên, các nền tảng này được thiết kế cho giao tiếp đại chúng, hoàn toàn thiếu vắng các tính năng chuyên biệt để lưu trữ gia phả, tổ chức dữ liệu dòng họ hay lưu truyền di sản lâu dài. 
+### 3. Đánh giá các hệ thống hiện có trên thị trường
 
-Ngược lại, các phần mềm quản lý gia phả truyền thống lại quá khô khan, chủ yếu tập trung vào việc ghi chép thông tin phả hệ một chiều (static information) mà thiếu đi hệ sinh thái cộng đồng để các thành viên tương tác, chia sẻ tin tức hay tổ chức sự kiện. Các hệ thống này chưa tạo ra được "động lực" để các thế hệ, đặc biệt là người trẻ, chủ động tham gia.
-
----
-
-### 5. Tầm nhìn của dự án
-Tầm nhìn của dự án **FamilyConnect** là trở thành nền tảng công nghệ tiên phong trong việc số hóa di sản và kết nối cộng đồng gia tộc, nơi công nghệ AI hiện đại giao thoa với các giá trị truyền thống trên nền tảng bảo mật tuyệt đối.
-
-Tầm nhìn chiến lược này được định hình qua 4 trụ cột chính:
-1. **Bảo tồn di sản sống (Living Heritage):** Chuyển đổi gia phả từ các cuốn sổ giấy hay dữ liệu tĩnh thành một "di sản số sống động". Nơi lưu giữ trọn vẹn lịch sử, hình ảnh, video và câu chuyện của nhiều thế hệ, giúp di sản gia tộc không bị phai mờ theo thời gian.
-2. **Thu hẹp khoảng cách thế hệ nhờ AI:** Biến AI thành "người truyền ngôn gia tộc", giúp thế hệ trẻ tiếp cận lịch sử dòng họ một cách tự nhiên và thú vị qua các tính năng truy vấn ngữ nghĩa, giải thích mối quan hệ xưng hô và gợi ý kết nối dựa trên sở thích, nghề nghiệp.
-3. **Chuẩn mực mới về Tự chủ Dữ liệu (Data Sovereignty):** Định hình xu hướng sử dụng "Máy chủ gia đình" (Home Server), chứng minh rằng một ứng dụng thông minh, hiện đại hoàn toàn có thể vận hành cục bộ (Local-first) mà không cần đánh đổi quyền riêng tư hay phụ thuộc vào các tập đoàn công nghệ bên thứ ba.
-4. **Xây dựng Hệ sinh thái Dòng họ vững mạnh:** Mở rộng vai trò từ một ứng dụng gia phả thành mạng lưới hỗ trợ lẫn nhau trong dòng họ — từ tổ chức sự kiện, quỹ học bổng, đến kết nối cơ hội nghề nghiệp và kinh doanh giữa các thành viên, tạo tiền đề cho sự phát triển bền vững của toàn gia tộc.
+| Tiêu chí so sánh | Gramps | Webtrees | MyHeritage / Ancestry | Mạng xã hội (Zalo/FB) | **FamilyConnect** |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Cây gia phả trực quan** | Có (Phức tạp) | Có (Cơ bản) | Có (Hiện đại) | Không có | **Có (React Flow mượt mà)** |
+| **Hệ thống xưng hô thuần Việt** | Không | Không | Không | Không | **Có (Thuật toán BFS & LCA)** |
+| **Trợ lý AI hỏi đáp phả ký** | Không | Không | Có (Đắt đỏ trên Cloud) | Không | **Có (Local RAG & Q&A)** |
+| **Bản tin & Tương tác cộng đồng** | Không | Rất hạn chế | Hạn chế | Có (Không chuyên biệt) | **Có (Đầy đủ bài viết, RSVP, ảnh)** |
+| **Lịch giỗ Âm lịch tự động** | Không | Hạn chế | Không | Không | **Có (Nhắc giỗ & phân công việc)** |
+| **Bảo mật & Tự chủ dữ liệu** | Offline đơn máy | Self-hosted | Lưu trữ Đám mây công cộng | Đám mây công cộng | **Local-First / On-Premise hoàn toàn** |
+| **Chi phí sử dụng** | Miễn phí | Miễn phí | Thu phí cao hàng tháng | Miễn phí | **Mã nguồn mở, tự triển khai** |
 
 ---
 
-### 6. Phạm vi và hạn chế của dự án
+### 4. Cơ hội kinh doanh & Giá trị thực tiễn
+1. **Giải quyết khoảng trống thị trường:** Các phần mềm gia phả truyền thống chỉ ghi chép thông tin phả hệ một chiều (dữ liệu tĩnh), trong khi các mạng xã hội hiện đại lại thiếu vắng cơ chế quản lý phả hệ và bảo mật gia tộc. FamilyConnect lấp đầy khoảng trống này bằng cách kiến tạo một nền tảng "Tất cả trong một" (All-in-One Family Hub).
+2. **Thúc đẩy sự tham gia của thế hệ trẻ:** Giao diện trực quan hiện đại kết hợp với Trợ lý AI giải thích xưng hô và gợi ý kết nối nghề nghiệp tạo động lực mạnh mẽ để thanh niên trong họ chủ động tìm hiểu về cội nguồn.
+3. **Mô hình triển khai linh hoạt:** Phù hợp với mọi quy mô từ gia đình nhỏ (tiểu gia đình), nhánh chi họ (vài chục hộ) cho đến các đại tộc lớn hàng nghìn thành viên trên khắp cả nước.
 
-#### a. Các tính năng chính
-- **FE1. User & Authentication:** Đăng ký, đăng nhập JWT, xác thực thành viên họ tộc.
-- **FE2. Family Tree & Genealogy:** Cây gia phả tương tác đa thế hệ, tra cứu xưng hô họ tộc.
-- **FE3. Community & Newsfeed:** Bảng tin gia tộc, chia sẻ thông báo, bài viết, bình luận, tương tác.
-- **FE4. Event & Milestone Management:** Tạo lịch họp họ, giỗ chạp, quản lý người tham dự (RSVP), nhắc nhở.
-- **FE5. Family Directory & Mutual Aid:** Danh bạ người thân, nghề nghiệp, nơi ở, hỗ trợ hướng nghiệp.
-- **FE6. Family Heritage & Digital Archives:** Tủ sách truyền thống, ghi chép tiểu sử cụ tổ, tư liệu lịch sử.
-- **FE7. AI-powered Assistant:** Trợ lý AI giải thích mối quan hệ họ hàng phức tạp, tìm kiếm ngữ nghĩa thông tin gia phả, tóm tắt sự kiện dòng họ.
-- **FE8. Dashboard & Analytics:** Thống kê nhân khẩu học gia tộc (độ tuổi, phân bố địa lý, tăng trưởng).
-- **FE9. System Administration:** Phân quyền Trưởng họ, Trưởng chi, Thành viên; kiểm duyệt nội dung.
+---
 
-#### b. Các hạn chế
-- Vận hành trên môi trường mạng nội bộ / Localhost để đảm bảo bảo mật dữ liệu riêng tư.
-- Khả năng xử lý của mô hình AI phụ thuộc vào cấu hình tài nguyên phần cứng máy chủ cục bộ (RAM, CPU/GPU).
+### 5. Tầm nhìn chiến lược của dự án (Vision)
+Tầm nhìn của **FamilyConnect** là trở thành **Nền tảng số hóa di sản và mạng xã hội gia tộc số 1**, bảo tồn ký ức lịch sử của các dòng họ Việt Nam trên nền tảng công nghệ số bảo mật tuyệt đối.
+
+Tầm nhìn được định hình qua 4 trụ cột cốt lõi:
+1. **Di sản sống (Living Heritage):** Biến những trang phả ký Hán - Nôm hay sổ phả cũ thành cây gia phả tương tác sống động, đính kèm hình ảnh, tư liệu âm thanh, văn khấn và tiểu sử công đức của tổ tiên.
+2. **Trợ lý gia tộc thông minh (Kinship AI Assistant):** Đưa AI thành "người giải nghĩa tôn ti họ tộc", tự động phân tích đồ thị quan hệ để chỉ ra mối quan hệ chính xác và đại từ xưng hô tôn kính theo lễ nghi truyền thống Việt Nam.
+3. **Chủ quyền dữ liệu tuyệt đối (Data Sovereignty):** Triển khai mô hình Local-First / On-Premise, dữ liệu dòng họ được lưu trữ hoàn toàn trên máy chủ của gia đình, không chịu sự can thiệp hay phân tích dữ liệu từ các nền tảng mạng xã hội bên thứ ba.
+4. **Hệ sinh thái tương trợ & gắn kết dòng tộc (Mutual Aid Network):** Không chỉ dừng lại ở việc xem phả hệ, FamilyConnect hỗ trợ kết nối tìm kiếm cơ hội việc làm, chia sẻ kinh nghiệm học tập, gây quỹ khuyến học và tổ chức ngày giỗ chạp trang nghiêm, thắt chặt tình đoàn kết thân tộc.
+
+---
+
+### 6. Phạm vi và Hạn chế của dự án (Scope & Limitations)
+
+#### a. Các phân hệ chức năng chính (Core Features)
+- **FE1. User & Authentication:** Đăng ký, đăng nhập JWT, phân quyền vai trò (Admin, Trưởng họ, Trưởng chi, Thành viên, Khách).
+- **FE2. Family Tree & Genealogy:** Cây phả hệ tương tác đa thế hệ bằng React Flow, thuật toán chống chu trình vòng lặp quan hệ, quản lý quan hệ cha-con và hôn phối.
+- **FE3. Community & Newsfeed:** Bản tin nội bộ họ tộc, thông cáo chính thức, chia sẻ khoảnh khắc kỷ niệm, bình luận và thả cảm xúc.
+- **FE4. Event & Milestone Management:** Quản lý sự kiện giỗ tổ, giỗ chi phái theo lịch Âm, điểm danh và dự toán cỗ bàn qua tính năng xác nhận tham dự (RSVP).
+- **FE5. Family Directory & Mutual Aid:** Danh bạ số hóa người thân đang sinh sống, tra cứu theo ngành nghề, học vấn để hỗ trợ hướng nghiệp và quỹ khuyến học.
+- **FE6. Family Heritage & Digital Archives:** Tủ sách di sản số lưu trữ phả ký, hương ước cổ, tiểu sử danh nhân tiền bối và các bài văn khấn chuẩn mực.
+- **FE7. AI-powered Kinship Assistant:** Trợ lý AI suy luận tôn ti trật tự, tính toán đại từ xưng hô thuần Việt (BFS/LCA), hỏi đáp tri thức gia đình và tóm tắt tiểu sử công đức.
+- **FE8. Dashboard & Analytics:** Bảng điều khiển trực quan thống kê nhân khẩu học (tháp tuổi, phân bố giới tính, thế hệ, tăng trưởng dân số).
+- **FE9. System Administration & Security:** Quản lý tài khoản, ma trận phân quyền RBAC, nhật ký kiểm toán hệ thống (Audit Logs) và sao lưu dữ liệu CSDL.
+
+#### b. Giới hạn hệ thống (Limitations)
+- Hệ thống ưu tiên vận hành trong môi trường mạng nội bộ (Localhost / Intranet / VPN riêng) để phục vụ tiêu chí bảo mật cục bộ cao nhất.
+- Khả năng xử lý các mô hình ngôn ngữ lớn (LLM) phụ thuộc vào cấu hình phần cứng của máy chủ triển khai tại chỗ (khuyến nghị tối thiểu 8GB RAM, CPU từ 4 nhân hoặc có GPU hỗ trợ).

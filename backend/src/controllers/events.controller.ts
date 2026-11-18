@@ -31,7 +31,7 @@ export const getEvents = async (req: Request, res: Response): Promise<void> => {
       where: { family_id: BigInt(familyIdStr) },
       orderBy: { event_date: 'asc' },
       include: {
-        users: { select: { user_id: true, full_name: true } },
+        users: { select: { user_id: true, full_name: true, email: true, avatar_url: true } },
         _count: { select: { event_rsvps: true } },
       },
     });
@@ -39,16 +39,23 @@ export const getEvents = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({
       success: true,
       statusCode: 200,
-      data: convertBigInt(events.map((e) => ({
-        id: e.event_id,
-        title: e.title,
-        description: e.description,
-        eventDate: e.event_date,
-        location: e.location,
-        createdAt: e.created_at,
-        creator: { id: e.users.user_id, fullName: e.users.full_name },
-        rsvpCount: e._count.event_rsvps,
-      }))),
+      data: convertBigInt(
+        events.map((e) => ({
+          id: e.event_id,
+          title: e.title,
+          description: e.description,
+          eventDate: e.event_date,
+          location: e.location,
+          createdAt: e.created_at,
+          creator: {
+            id: e.users.user_id,
+            fullName: e.users.full_name,
+            email: e.users.email,
+            avatarUrl: e.users.avatar_url,
+          },
+          rsvpCount: e._count.event_rsvps,
+        }))
+      ),
     });
   } catch (error) {
     console.error('Lỗi khi lấy sự kiện:', error);
@@ -60,7 +67,7 @@ export const getEvents = async (req: Request, res: Response): Promise<void> => {
 export const createEvent = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = (req as any).user?.userId as string | undefined;
-    const { familyId, title, description, eventDate, location } = req.body;
+    const { familyId, title, description, eventDate, location, mediaUrls } = req.body;
 
     if (!userId) {
       res.status(401).json({ success: false, statusCode: 401, message: 'Chưa xác thực' });
@@ -91,6 +98,10 @@ export const createEvent = async (req: Request, res: Response): Promise<void> =>
         description: typeof description === 'string' ? description : null,
         event_date: new Date(eventDate),
         location: typeof location === 'string' ? location : null,
+        media_urls: Array.isArray(mediaUrls) ? mediaUrls : [],
+      },
+      include: {
+        users: { select: { user_id: true, full_name: true, email: true, avatar_url: true } },
       },
     });
 
@@ -98,7 +109,19 @@ export const createEvent = async (req: Request, res: Response): Promise<void> =>
       success: true,
       statusCode: 201,
       message: 'Tạo sự kiện thành công',
-      data: convertBigInt(event),
+      data: convertBigInt({
+        id: event.event_id,
+        title: event.title,
+        description: event.description,
+        eventDate: event.event_date,
+        location: event.location,
+        mediaUrls: event.media_urls,
+        createdAt: event.created_at,
+        creator: {
+          id: event.users.user_id,
+          fullName: event.users.full_name,
+        },
+      }),
     });
   } catch (error) {
     console.error('Lỗi khi tạo sự kiện:', error);
@@ -110,7 +133,8 @@ export const createEvent = async (req: Request, res: Response): Promise<void> =>
 export const rsvpEvent = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = (req as any).user?.userId as string | undefined;
-    const eventId = String(req.params['id'] ?? '');
+    const rawId = req.params['id'] ?? '';
+    const eventId = String(rawId).replace(/^event_/, '');
     const { status } = req.body;
 
     if (!userId) {
@@ -123,8 +147,19 @@ export const rsvpEvent = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const event = await prisma.events.findUnique({
+      where: { event_id: BigInt(eventId) },
+    });
+
+    if (!event) {
+      res.status(404).json({ success: false, statusCode: 404, message: 'Không tìm thấy sự kiện' });
+      return;
+    }
+
     const validStatuses = ['GOING', 'DECLINED', 'TENTATIVE'];
-    const rsvpStatus = validStatuses.includes(String(status ?? '')) ? String(status) : 'GOING';
+    const rsvpStatus = validStatuses.includes(String(status ?? '').toUpperCase())
+      ? String(status).toUpperCase()
+      : 'GOING';
 
     const existing = await prisma.event_rsvps.findFirst({
       where: { event_id: BigInt(eventId), user_id: BigInt(userId) },
@@ -146,11 +181,30 @@ export const rsvpEvent = async (req: Request, res: Response): Promise<void> => {
       });
     }
 
+    // Lấy tổng số lượng RSVP cập nhật
+    const countGoing = await prisma.event_rsvps.count({
+      where: { event_id: BigInt(eventId), status: 'GOING' },
+    });
+    const countTentative = await prisma.event_rsvps.count({
+      where: { event_id: BigInt(eventId), status: 'TENTATIVE' },
+    });
+    const countDeclined = await prisma.event_rsvps.count({
+      where: { event_id: BigInt(eventId), status: 'DECLINED' },
+    });
+
     res.status(200).json({
       success: true,
       statusCode: 200,
       message: 'Cập nhật RSVP thành công',
-      data: convertBigInt(rsvp),
+      data: {
+        rsvp: convertBigInt(rsvp),
+        stats: {
+          total: countGoing + countTentative + countDeclined,
+          going: countGoing,
+          tentative: countTentative,
+          declined: countDeclined,
+        },
+      },
     });
   } catch (error) {
     console.error('Lỗi khi RSVP:', error);
@@ -158,3 +212,83 @@ export const rsvpEvent = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+// ==================== LẤY DANH SÁCH NGƯỜI THAM GIA (ATTENDEES / RSVPs) ====================
+export const getEventAttendees = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const rawId = req.params['id'] ?? '';
+    const eventId = String(rawId).replace(/^event_/, '');
+    const filterStatus = req.query['status'] as string | undefined;
+
+    if (!isValidId(eventId)) {
+      res.status(400).json({ success: false, statusCode: 400, message: 'ID sự kiện không hợp lệ' });
+      return;
+    }
+
+    const event = await prisma.events.findUnique({
+      where: { event_id: BigInt(eventId) },
+      select: { event_id: true, title: true, event_date: true, location: true },
+    });
+
+    if (!event) {
+      res.status(404).json({ success: false, statusCode: 404, message: 'Không tìm thấy sự kiện' });
+      return;
+    }
+
+    const whereClause: any = { event_id: BigInt(eventId) };
+    if (filterStatus && ['GOING', 'DECLINED', 'TENTATIVE'].includes(filterStatus.toUpperCase())) {
+      whereClause.status = filterStatus.toUpperCase();
+    }
+
+    const rsvps = await prisma.event_rsvps.findMany({
+      where: whereClause,
+      include: {
+        users: {
+          select: {
+            user_id: true,
+            full_name: true,
+            email: true,
+            avatar_url: true,
+            role: true,
+          },
+        },
+      },
+      orderBy: { updated_at: 'desc' },
+    });
+
+    // Thống kê phân loại
+    const attendees = rsvps.map((r) => ({
+      rsvpId: r.rsvp_id.toString(),
+      status: r.status,
+      updatedAt: r.updated_at,
+      user: {
+        id: r.users.user_id.toString(),
+        fullName: r.users.full_name,
+        email: r.users.email,
+        avatarUrl: r.users.avatar_url,
+        systemRole: r.users.role,
+      },
+    }));
+
+    const going = attendees.filter((a) => a.status === 'GOING');
+    const tentative = attendees.filter((a) => a.status === 'TENTATIVE');
+    const declined = attendees.filter((a) => a.status === 'DECLINED');
+
+    res.status(200).json({
+      success: true,
+      statusCode: 200,
+      data: {
+        event: convertBigInt(event),
+        total: attendees.length,
+        summary: {
+          goingCount: going.length,
+          tentativeCount: tentative.length,
+          declinedCount: declined.length,
+        },
+        attendees,
+      },
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách người tham gia sự kiện:', error);
+    res.status(500).json({ success: false, statusCode: 500, message: 'Lỗi hệ thống máy chủ' });
+  }
+};

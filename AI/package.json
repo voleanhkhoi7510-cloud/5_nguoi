@@ -1,0 +1,23 @@
+{
+  "name": "familyconnect-ai",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "FamilyConnect AI Service - Khung AI chuyên biệt cho quản lý phả hệ, phân tích quan hệ và hỏi đáp tri thức gia đình",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "npx tsx tests/ai.test.ts",
+    "start": "npx tsx src/index.ts"
+  },
+  "keywords": [
+    "family",
+    "genealogy",
+    "ai",
+    "qa",
+    "vietnamese-relationship",
+    "rag"
+  ],
+  "author": "FamilyConnect AI Team",
+  "license": "ISC"
+}

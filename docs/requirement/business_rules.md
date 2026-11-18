@@ -7,7 +7,7 @@
 ---
 
 ## 1. Tổng quan (Overview)
-Tài liệu này xác định 50 quy tắc nghiệp vụ cốt lõi (**BR-01** đến **BR-50**) ràng buộc các luồng logic của hệ thống FamilyConnect. Mọi logic xử lý tại tầng Backend (Spring Boot Validation), Ràng buộc CSDL (PostgreSQL Constraints), Thuật toán kiểm tra đồ thị phả hệ, và Trợ lý AI cục bộ (Ollama) bắt buộc phải tuân thủ nghiêm ngặt các quy tắc này.
+Tài liệu này xác định 50 quy tắc nghiệp vụ cốt lõi (**BR-01** đến **BR-50**) ràng buộc các luồng logic của hệ thống FamilyConnect. Mọi logic xử lý tại tầng Backend (Express TypeScript Validation & Middlewares), Ràng buộc CSDL (PostgreSQL Constraints & Prisma), Thuật toán kiểm tra đồ thị phả hệ, và Trợ lý AI cục bộ bắt buộc phải tuân thủ nghiêm ngặt các quy tắc này.
 
 ---
 

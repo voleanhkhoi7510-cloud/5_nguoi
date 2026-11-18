@@ -9,7 +9,11 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev"
+    "db:migrate": "prisma migrate dev",
+    "test:ai": "tsx ../AI/tests/ai.test.ts",
+    "test:rbac": "tsx tests/rbac.test.ts",
+    "test:modules": "tsx tests/modules.test.ts",
+    "test": "tsx ../AI/tests/ai.test.ts && tsx tests/rbac.test.ts && tsx tests/modules.test.ts"
   },
   "keywords": [],
   "author": "",
