@@ -1,0 +1,854 @@
+openapi: 3.0.3
+info:
+  title: FamilyConnect REST API Specification
+  description: >
+    Tài liệu OpenAPI 3.0 cho hệ thống FamilyConnect - Nền tảng Cộng đồng Gia đình số tích hợp Trí tuệ nhân tạo.
+    Tối ưu hóa cho môi trường phát triển Local (Web Portal & REST Backend).
+  version: 1.1.0
+  contact:
+    name: FamilyConnect Dev Team
+    email: dev@familyconnect.local
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Môi trường Local Development (Backend)
+  - url: http://localhost:3000/api/v1
+    description: Môi trường Local Mock Data Server
+
+tags:
+  - name: Authentication
+  - name: User
+  - name: Genealogy
+  - name: Community
+  - name: AI Services
+  - name: Analytics
+
+paths:
+  # =========================================================================
+  # AUTH & USER MODULE
+  # =========================================================================
+  /auth/register:
+    post:
+      summary: Đăng ký tài khoản mới
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Đăng ký thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterSuccessResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+
+  /auth/login:
+    post:
+      summary: Đăng nhập hệ thống
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Đăng nhập thành công, trả về JWT Token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginSuccessResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+
+  /users/me:
+    get:
+      summary: Lấy thông tin tài khoản hiện tại
+      tags:
+        - User
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lấy thông tin thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        '401':
+          $ref: '#/components/responses/401Error'
+
+  # =========================================================================
+  # GENEALOGY & FAMILY MODULE
+  # =========================================================================
+  /genealogy/tree:
+    get:
+      summary: Lấy dữ liệu Cây gia phả (Graph Nodes & Edges)
+      tags:
+        - Genealogy
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: familyId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: fam_001
+        - name: maxGeneration
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+            example: 10
+      responses:
+        '200':
+          description: Trả về danh sách Nút và Liên kết phục vụ dựng sơ đồ cây
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenealogyTreeResponse'
+        '401':
+          $ref: '#/components/responses/401Error'
+        '404':
+          $ref: '#/components/responses/404Error'
+
+  /members:
+    post:
+      summary: Thêm thành viên mới vào cây gia phả
+      tags:
+        - Genealogy
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddMemberRequest'
+      responses:
+        '201':
+          description: Thêm thành viên thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseSuccessResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '403':
+          $ref: '#/components/responses/403Error'
+
+  /genealogy/relationships/query:
+    get:
+      summary: Truy vấn quan hệ giữa 2 thành viên
+      tags:
+        - Genealogy
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: memberAId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: mem_03
+        - name: memberBId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: mem_01
+      responses:
+        '200':
+          description: Lấy mối quan hệ thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelationshipQueryResponse'
+
+  # =========================================================================
+  # COMMUNITY & POSTS MODULE
+  # =========================================================================
+  /posts:
+    get:
+      summary: Lấy danh sách bài viết / thông báo
+      tags:
+        - Community
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: familyId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: fam_001
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Danh sách bài viết phân trang
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostsListResponse'
+    post:
+      summary: Đăng bài viết mới / Thông báo dòng họ
+      tags:
+        - Community
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePostRequest'
+      responses:
+        '201':
+          description: Tạo bài viết thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseSuccessResponse'
+
+  # =========================================================================
+  # AI SERVICES MODULE
+  # =========================================================================
+  /ai/search:
+    post:
+      summary: AI Semantic Search - Tìm kiếm ngữ nghĩa trong gia tộc
+      tags:
+        - AI Services
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AISearchRequest'
+      responses:
+        '200':
+          description: Kết quả tìm kiếm ngữ nghĩa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AISearchResponse'
+
+  /ai/chat:
+    post:
+      summary: AI Chatbot - Trợ lý Hỏi đáp Trí tuệ Nhân tạo
+      tags:
+        - AI Services
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIChatRequest'
+      responses:
+        '200':
+          description: Câu trả lời từ AI kèm trích dẫn nguồn
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIChatResponse'
+
+  /ai/explain-relationship:
+    post:
+      summary: AI Giải thích mối quan hệ xưng hô bằng ngôn ngữ tự nhiên
+      tags:
+        - AI Services
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIExplainRelationRequest'
+      responses:
+        '200':
+          description: Lời giải thích cách xưng hô
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIExplainRelationResponse'
+
+  # =========================================================================
+  # DASHBOARD & ANALYTICS MODULE
+  # =========================================================================
+  /dashboard/stats:
+    get:
+      summary: Thống kê tổng quan gia tộc cho Dashboard
+      tags:
+        - Analytics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: familyId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: fam_001
+      responses:
+        '200':
+          description: Số liệu thống kê gia tộc
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStatsResponse'
+
+# =========================================================================
+# COMPONENTS & SCHEMAS DEFINITION
+# =========================================================================
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    400Error:
+      description: Dữ liệu đầu vào không hợp lệ
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    401Error:
+      description: Chưa xác thực hoặc Token hết hạn
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    403Error:
+      description: Không có quyền truy cập
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    404Error:
+      description: Không tìm thấy tài nguyên
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    # --- Common Envelopes ---
+    BaseSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        statusCode:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Thao tác thành công
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        statusCode:
+          type: integer
+          example: 400
+        errorCode:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          example: Dữ liệu không hợp lệ
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: email
+              message:
+                type: string
+                example: Email đã tồn tại
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-10-20T12:00:00Z"
+
+    # --- Auth Schemas ---
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - fullName
+      properties:
+        email:
+          type: string
+          format: email
+          example: nguyenvana@gmail.com
+        password:
+          type: string
+          format: password
+          example: Password123@
+        fullName:
+          type: string
+          example: Nguyễn Văn A
+        phoneNumber:
+          type: string
+          example: "0912345678"
+
+    RegisterSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseSuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  example: usr_101
+                email:
+                  type: string
+                  example: nguyenvana@gmail.com
+                fullName:
+                  type: string
+                  example: Nguyễn Văn A
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: nguyenvana@gmail.com
+        password:
+          type: string
+          format: password
+          example: Password123@
+
+    LoginSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseSuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                accessToken:
+                  type: string
+                  example: eyJhbGciOiJIUzI1Ni...
+                refreshToken:
+                  type: string
+                  example: d98f7a6b5c4e...
+                user:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: usr_101
+                    email:
+                      type: string
+                      example: nguyenvana@gmail.com
+                    fullName:
+                      type: string
+                      example: Nguyễn Văn A
+                    role:
+                      type: string
+                      example: ADMIN
+                    avatarUrl:
+                      type: string
+                      example: http://localhost:8080/uploads/avatars/default.png
+
+    UserProfileResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseSuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                id:
+                  type: string
+                email:
+                  type: string
+                fullName:
+                  type: string
+                role:
+                  type: string
+
+    # --- Genealogy Schemas ---
+    TreeNode:
+      type: object
+      properties:
+        id:
+          type: string
+          example: mem_01
+        fullName:
+          type: string
+          example: Nguyễn Văn Cụ
+        gender:
+          type: string
+          enum: [MALE, FEMALE, OTHER]
+          example: MALE
+        generation:
+          type: integer
+          example: 1
+        birthYear:
+          type: integer
+          example: 1930
+        isAlive:
+          type: boolean
+          example: false
+        avatarUrl:
+          type: string
+          example: http://localhost:8080/uploads/avatars/cu.png
+
+    TreeEdge:
+      type: object
+      properties:
+        id:
+          type: string
+          example: edge_01
+        source:
+          type: string
+          example: mem_01
+        target:
+          type: string
+          example: mem_02
+        relationType:
+          type: string
+          enum: [PARENT_CHILD, MARRIAGE]
+          example: MARRIAGE
+
+    GenealogyTreeResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseSuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                familyId:
+                  type: string
+                  example: fam_001
+                familyName:
+                  type: string
+                  example: Dòng Họ Nguyễn Văn (Đại Tộc)
+                nodes:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/TreeNode'
+                edges:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/TreeEdge'
+
+    AddMemberRequest:
+      type: object
+      required:
+        - familyId
+        - fullName
+        - gender
+        - generation
+      properties:
+        familyId:
+          type: string
+          example: fam_001
+        branchId:
+          type: string
+          example: br_01
+        fullName:
+          type: string
+          example: Nguyễn Văn Con
+        gender:
+          type: string
+          enum: [MALE, FEMALE, OTHER]
+          example: MALE
+        generation:
+          type: integer
+          example: 3
+        birthDate:
+          type: string
+          format: date
+          example: "1995-05-20"
+        isAlive:
+          type: boolean
+          example: true
+        parentId:
+          type: string
+          example: mem_03
+        occupation:
+          type: string
+          example: Kỹ sư phần mềm
+        currentLocation:
+          type: string
+          example: Hà Nội
+
+    RelationshipQueryResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseSuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                memberA:
+                  type: string
+                  example: Nguyễn Văn Cha
+                memberB:
+                  type: string
+                  example: Nguyễn Văn Cụ
+                relationTitle:
+                  type: string
+                  example: Cha - Con
+                description:
+                  type: string
+                  example: Nguyễn Văn Cha là con đẻ của Nguyễn Văn Cụ
+
+    # --- Community Schemas ---
+    CreatePostRequest:
+      type: object
+      required:
+        - familyId
+        - content
+      properties:
+        familyId:
+          type: string
+          example: fam_001
+        content:
+          type: string
+          example: Thông báo về việc chuẩn bị Lễ Tảo mộ đầu năm 2027
+        isAnnouncement:
+          type: boolean
+          example: true
+        mediaUrls:
+          type: array
+          items:
+            type: string
+            example: http://localhost:8080/uploads/posts/photo1.jpg
+
+    PostsListResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseSuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  content:
+                    type: string
+                  isAnnouncement:
+                    type: boolean
+                  createdAt:
+                    type: string
+                    format: date-time
+            meta:
+              type: object
+              properties:
+                page:
+                  type: integer
+                  example: 1
+                limit:
+                  type: integer
+                  example: 10
+                total:
+                  type: integer
+                  example: 45
+                totalPages:
+                  type: integer
+                  example: 5
+
+    # --- AI Schemas ---
+    AISearchRequest:
+      type: object
+      required:
+        - familyId
+        - query
+      properties:
+        familyId:
+          type: string
+          example: fam_001
+        query:
+          type: string
+          example: Tìm các thành viên đời thứ 3 làm nghề bác sĩ hoặc kỹ sư ở Hà Nội
+
+    AISearchResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseSuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                totalMatches:
+                  type: integer
+                  example: 1
+                results:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      memberId:
+                        type: string
+                        example: mem_05
+                      fullName:
+                        type: string
+                        example: Nguyễn Văn Con
+                      generation:
+                        type: integer
+                        example: 3
+                      occupation:
+                        type: string
+                        example: Kỹ sư phần mềm
+                      location:
+                        type: string
+                        example: Hà Nội
+                      relevanceScore:
+                        type: number
+                        format: float
+                        example: 0.95
+
+    AIChatRequest:
+      type: object
+      required:
+        - familyId
+        - prompt
+      properties:
+        familyId:
+          type: string
+          example: fam_001
+        conversationId:
+          type: string
+          example: conv_1001
+        prompt:
+          type: string
+          example: Gia quy dòng họ Nguyễn Văn có những điều cấm gì?
+
+    AIChatResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseSuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                conversationId:
+                  type: string
+                  example: conv_1001
+                answer:
+                  type: string
+                  example: Dựa trên tư liệu gia phả, gia quy quy định 3 điều cấm...
+                sources:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      documentTitle:
+                        type: string
+                        example: Gia quy Tộc Nguyễn Văn - Bản năm 1998
+                      documentId:
+                        type: string
+                        example: doc_888
+
+    AIExplainRelationRequest:
+      type: object
+      required:
+        - fromMemberId
+        - toMemberId
+      properties:
+        fromMemberId:
+          type: string
+          example: mem_05
+        toMemberId:
+          type: string
+          example: mem_01
+
+    AIExplainRelationResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseSuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                explanation:
+                  type: string
+                  example: Nguyễn Văn Con (thế hệ 3) phải gọi Nguyễn Văn Cụ (thế hệ 1) là Ông Nội.
+
+    # --- Analytics Schemas ---
+    DashboardStatsResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseSuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                totalMembers:
+                  type: integer
+                  example: 120
+                totalLiving:
+                  type: integer
+                  example: 85
+                totalGenerations:
+                  type: integer
+                  example: 5
+                genderRatio:
+                  type: object
+                  properties:
+                    male:
+                      type: integer
+                      example: 65
+                    female:
+                      type: integer
+                      example: 55
+                ageDistribution:
+                  type: object
+                  properties:
+                    under18:
+                      type: integer
+                      example: 20
+                    from18to60:
+                      type: integer
+                      example: 75
+                    above60:
+                      type: integer
+                      example: 25

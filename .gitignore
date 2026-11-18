@@ -1,0 +1,55 @@
+# ========================================================
+# Node.js & Dependencies (RẤT NẶNG - KHÔNG ĐƯỢC ĐẨY LÊN)
+# ========================================================
+node_modules/
+*/node_modules/
+
+# ========================================================
+# Environment Variables & Secrets (BẢO MẬT - TUYỆT ĐỐI KHÔNG ĐƯỢC ĐẨY LÊN)
+# ========================================================
+.env
+.env.local
+.env.*.local
+*.env
+backend/.env
+
+# ========================================================
+# Build & Compiled Output (FILE BIÊN DỊCH - TỰ ĐỘNG SINH KHI BUILD)
+# ========================================================
+dist/
+*/dist/
+build/
+*/build/
+out/
+.next/
+*.tsbuildinfo
+frontend/tsconfig.tsbuildinfo
+
+# Prisma Client Generated Files (Sinh tự động bằng 'npx prisma generate')
+backend/src/generated/
+
+# ========================================================
+# Logs & Cache (TẬP TIN NHẬT KÝ VÀ BỘ NHỚ ĐỆM)
+# ========================================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.npm
+.eslintcache
+
+# ========================================================
+# IDE & OS Files (TẬP TIN CỦA HỆ ĐIỀU HÀNH VÀ TRÌNH SOẠN THẢO)
+# ========================================================
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

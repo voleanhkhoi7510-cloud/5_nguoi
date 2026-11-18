@@ -1,0 +1,3 @@
+WINDOWS: bam dup file chay-windows.bat (can cai Node.js ban LTS tu nodejs.org truoc).
+MAC: mo Terminal, go "cd " (co dau cach), keo tha thu muc nay vao cua so, bam Enter,
+     roi go lan luot: npm install   va   npm run dev
