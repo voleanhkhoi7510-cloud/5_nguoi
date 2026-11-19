@@ -334,14 +334,3 @@ Mở terminal tại thư mục `backend`:
 
 ---
 
-## 👥 Nhóm Tác Giả & Đóng Góp
-
-Dự án được xây dựng và phát triển bởi nhóm **5_nguoi**:
-- **Võ Lê Anh Khôi** (Team Leader / Fullstack Engineer) – `khoivla792254@ut.edu.vn`
-- **Phan Thanh Bình** (Frontend Lead / UI-UX) – `binhpt.fc@gmail.com`
-- **Trần Quang Huy** (AI & Algorithm Engineer) – `huytq.fc@gmail.com`
-- **Lê Võ Tuấn Hùng** (Backend & QA Engineer) – `hunglvt.fc@gmail.com`
-
----
-
-*FamilyConnect – Nơi quá khứ, hiện tại và tương lai của gia tộc được kết nối bền chặt.*
